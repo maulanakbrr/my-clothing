@@ -1,6 +1,7 @@
 import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/auth';
+import { reject } from 'q';
 
 const configMyClothing ={
   apiKey: "AIzaSyBg2mo-UDGTvcrK3_nK0LwOORQMUn372vk",
@@ -12,6 +13,8 @@ const configMyClothing ={
   appId: "1:264492541645:web:2eea863f58999263f06b84",
   measurementId: "G-2HF6413EB9"
 };
+
+firebase.initializeApp(configMyClothing);
 
 export const createUserProfileDocument = async (userAuth, additionalData) => {
   if (!userAuth) return ;
@@ -70,13 +73,20 @@ export const convertCollectionsSnapshotToMap = (collections) => {
   }, {})
 };
 
-firebase.initializeApp(configMyClothing);
+export const getCurrentUser = () => {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = auth.onAuthStateChanged(userAuth => {
+      unsubscribe();
+      resolve(userAuth);
+    }, reject)
+  });
+};
 
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
 
-const provider = new firebase.auth.GoogleAuthProvider();
-provider.setCustomParameters({ prompt: 'select_account' });
-export const signInWithGoogle = () => auth.signInWithPopup(provider);
+export const googleProvider = new firebase.auth.GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+export const signInWithGoogle = () => auth.signInWithPopup(googleProvider);
 
 export default firebase;
